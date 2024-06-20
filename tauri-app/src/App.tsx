@@ -8,6 +8,7 @@ interface Drive {
 
 const App: React.FC = () => {
   const [drives, setDrives] = useState<Drive[]>([]);
+  const [files, setFiles] = useState<Drive[]>([]);
 
   useEffect(() => {
     fetchDrives();
@@ -15,8 +16,18 @@ const App: React.FC = () => {
 
   const fetchDrives = async () => {
     try {
-      const driveList = await invoke<Drive[]>("list_drives");
+      const driveList = await invoke<Drive[]>(`list_drives`);
       setDrives(driveList);
+    } catch (error) {
+      console.error("Error fetching drives:", error);
+    }
+  };
+
+  const loadFiles = async (path) => {
+    try {
+      const driveList = await invoke<Drive[]>("list_dir", path);
+      console.log(driveList);
+      setFiles(driveList);
     } catch (error) {
       console.error("Error fetching drives:", error);
     }
@@ -27,11 +38,19 @@ const App: React.FC = () => {
       <h1>Available Drives</h1>
       <ul>
         {drives.map((drive, index) => (
-          <li key={index} style={{ cursor: "pointer" }}>
+          <li
+            key={index}
+            style={{ cursor: "pointer" }}
+            onClick={() => loadFiles(drive)}
+          >
             {drive}
           </li>
         ))}
       </ul>
+      <p>Files</p>
+      {files.map((path) => (
+        <li>{path}</li>
+      ))}
     </div>
   );
 };
