@@ -25,7 +25,7 @@ const App: React.FC = () => {
 
   const loadFiles = async (path) => {
     try {
-      const driveList = await invoke<Drive[]>("list_dir", path);
+      const driveList = await invoke<Drive[]>("list_dir", { path: path }); //invoke('my_custom_command', { invokeMessage: 'Hello!' })
       console.log(driveList);
       setFiles(driveList);
     } catch (error) {
