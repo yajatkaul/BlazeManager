@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 
-interface Drive {
-  name: string;
-  path: string;
-}
-
 const App: React.FC = () => {
-  const [drives, setDrives] = useState<Drive[]>([]);
-  const [files, setFiles] = useState<Drive[]>([]);
+  const [files, setFiles] = useState<string[]>([]);
+  const [currentPath, setCurrentPath] = useState<string>("");
 
   useEffect(() => {
     fetchDrives();
@@ -16,41 +11,45 @@ const App: React.FC = () => {
 
   const fetchDrives = async () => {
     try {
-      const driveList = await invoke<Drive[]>(`list_drives`);
-      setDrives(driveList);
-    } catch (error) {
-      console.error("Error fetching drives:", error);
-    }
-  };
-
-  const loadFiles = async (path) => {
-    try {
-      const driveList = await invoke<Drive[]>("list_dir", { path: path }); //invoke('my_custom_command', { invokeMessage: 'Hello!' })
-      console.log(driveList);
+      const driveList = await invoke<string[]>(`list_drives`);
       setFiles(driveList);
     } catch (error) {
       console.error("Error fetching drives:", error);
     }
   };
 
+  const loadFiles = async (path: string) => {
+    try {
+      const fileList = await invoke<string[]>("list_dir", { path: path });
+      setFiles(fileList);
+      setCurrentPath(path); // Set the current path
+    } catch (error) {
+      console.error("Error fetching files:", error);
+    }
+  };
+
+  const goBack = async () => {
+    try {
+      const dir = await invoke<string>("go_one_step_back", {
+        path: currentPath,
+      });
+      loadFiles(dir);
+    } catch (error) {
+      console.error("Error going back:", error);
+    }
+  };
+
   return (
     <div className="App">
-      <h1>Available Drives</h1>
+      <button onClick={goBack}>Back</button>
+      <p>Files</p>
       <ul>
-        {drives.map((drive, index) => (
-          <li
-            key={index}
-            style={{ cursor: "pointer" }}
-            onClick={() => loadFiles(drive)}
-          >
-            {drive}
+        {files.map((path, index) => (
+          <li key={index} onClick={() => loadFiles(path)}>
+            {path}
           </li>
         ))}
       </ul>
-      <p>Files</p>
-      {files.map((path) => (
-        <li>{path}</li>
-      ))}
     </div>
   );
 };

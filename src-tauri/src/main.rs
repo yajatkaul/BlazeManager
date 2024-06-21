@@ -5,7 +5,7 @@
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![list_drives,list_dir])
+        .invoke_handler(tauri::generate_handler![list_drives,list_dir,go_one_step_back])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -33,6 +33,16 @@ fn list_drives() -> Vec<String> {
     }
     return drives
 }
+
+#[tauri::command]
+fn go_one_step_back(path: &str) -> Option<String> {
+    use std::path::{Path, PathBuf};
+
+    let path = Path::new(path);
+    
+    return path.parent().map(|parent| parent.to_string_lossy().to_string());
+}
+
 
 #[tauri::command]
 fn list_dir(path: String) -> Vec<String> {
