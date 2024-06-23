@@ -5,7 +5,7 @@
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![list_drives,list_dir,go_one_step_back])
+        .invoke_handler(tauri::generate_handler![list_drives,list_dir,go_one_step_back,find_dir])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -36,7 +36,7 @@ fn list_drives() -> Vec<String> {
 
 #[tauri::command]
 fn go_one_step_back(path: &str) -> Option<String> {
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
 
     let path = Path::new(path);
     
@@ -69,3 +69,26 @@ fn list_dir(path: String) -> Vec<String> {
     return drives
 }
 
+#[tauri::command]
+fn find_dir(dir_path: String, filename: String) -> Vec<String> {
+    use std::path::PathBuf;
+    use walkdir::WalkDir;
+
+    let mut results = Vec::new();
+    let dir = PathBuf::from(dir_path);
+
+
+    for entry in WalkDir::new(dir) {
+        let entry = match entry {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+        if entry.file_type().is_file() {
+            let file_name = entry.file_name().to_string_lossy();
+            if file_name == filename {
+                results.push(entry.path().display().to_string());
+            }
+        }
+    }
+    results
+}
