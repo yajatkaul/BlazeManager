@@ -3,9 +3,12 @@
     windows_subsystem = "windows"
 )]
 
+use serde_json::map::Entry;
+use walkdir::WalkDir;
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![list_drives,list_dir,go_one_step_back,find_dir])
+        .invoke_handler(tauri::generate_handler![list_drives,list_dir,go_one_step_back,find_dir,go_dir])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -70,6 +73,19 @@ fn list_dir(path: String) -> Vec<String> {
 }
 
 #[tauri::command]
+fn go_dir(dir_path: String) -> Vec<String> {
+    use walkdir::WalkDir;
+
+    let mut result = Vec::new();
+
+    for entry in WalkDir::new(dir_path).into_iter().filter_map(|e| e.ok()) {
+        result.push(entry.path().display().to_string());
+    }
+
+    result
+}
+
+#[tauri::command]
 fn find_dir(dir_path: String, filename: String) -> Vec<String> {
     use std::path::PathBuf;
     use walkdir::WalkDir;
@@ -78,17 +94,12 @@ fn find_dir(dir_path: String, filename: String) -> Vec<String> {
     let dir = PathBuf::from(dir_path);
 
 
-    for entry in WalkDir::new(dir) {
-        let entry = match entry {
-            Ok(e) => e,
-            Err(_) => continue,
-        };
-        if entry.file_type().is_file() {
-            let file_name = entry.file_name().to_string_lossy();
-            if file_name == filename {
-                results.push(entry.path().display().to_string());
-            }
+    for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
+        if entry.path().display().to_string() == filename{
+            println!("{}", entry.path().display());    
         }
+        
     }
+
     results
 }
