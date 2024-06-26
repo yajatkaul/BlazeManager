@@ -58,7 +58,7 @@ const App: React.FC = () => {
   const search = async (e: any) => {
     try {
       e.preventDefault();
-      const dir = await invoke<string>("find_dir", {
+      const dir = await invoke<string[]>("find_dir", {
         filename: searchFile,
         dirPath: currentPath,
       });
