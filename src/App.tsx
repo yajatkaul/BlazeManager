@@ -6,6 +6,8 @@ const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>("");
   const [searchFile, SetSearchFile] = useState<string>("");
   const [searchToDir, setSearchToDir] = useState<string>("");
+  const [searchFiles, setSearchFiles] = useState<string[]>([]);
+  
 
   useEffect(() => {
     fetchDrives();
@@ -24,7 +26,7 @@ const App: React.FC = () => {
     try {
       const fileList = await invoke<string[]>("list_dir", { path: path });
       setFiles(fileList);
-      setCurrentPath(path); // Set the current path
+      setCurrentPath(path);
     } catch (error) {
       console.error("Error fetching files:", error);
     }
@@ -60,6 +62,7 @@ const App: React.FC = () => {
         filename: searchFile,
         dirPath: currentPath,
       });
+      setSearchFiles(dir);
       console.log(dir);
     } catch (e) {
       console.log(e);
@@ -136,6 +139,16 @@ const App: React.FC = () => {
           </button>
         ))}
       </div>
+      <hr />
+      {searchFiles.map((path, index) => (
+        <button
+          onClick={() => loadFiles(path)}
+          className="btn btn-neutral"
+          key={index}
+        >
+          {path}
+        </button>
+      ))}
     </div>
   );
 };

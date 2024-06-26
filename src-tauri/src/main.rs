@@ -87,19 +87,28 @@ fn go_dir(dir_path: String) -> Vec<String> {
 
 #[tauri::command]
 fn find_dir(dir_path: String, filename: String) -> Vec<String> {
-    use std::path::PathBuf;
+    use std::path;
     use walkdir::WalkDir;
 
-    let mut results = Vec::new();
-    let dir = PathBuf::from(dir_path);
+    let mut matching_files = Vec::new();
+    let lower_filename_prefix = filename.to_lowercase();
 
-
-    for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
-        if entry.path().display().to_string() == filename{
-            println!("{}", entry.path().display());    
+    for entry in WalkDir::new(&dir_path).into_iter().filter_map(Result::ok) {
+        if entry.file_type().is_file() {
+            if let Some(file_name) = entry.path().file_name() {
+                let file_name_str = file_name.to_string_lossy().to_lowercase();
+                if file_name_str.starts_with(&lower_filename_prefix) {
+                    matching_files.push(entry.path().to_string_lossy().into_owned());
+                }
+            }
         }
-        
     }
 
-    results
+    // Debugging output
+    if matching_files.is_empty() {
+        println!("No files found starting with '{}'", filename);
+        println!("Searched in directory '{}'", dir_path);
+    }
+
+    matching_files
 }
