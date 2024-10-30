@@ -14,4 +14,14 @@
 </div>
 
 
+<h1 align="left">Changes to be made</h1>
 
+###
+
+<h3 align="left">IT IS SLOW</h3>
+
+###
+
+> <p align="left">- Someone who can figure out why it is slow</p>
+
+###
